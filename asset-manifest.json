@@ -1,0 +1,15 @@
+{
+  "files": {
+    "main.css": "/exam-timer-app/static/css/main.cd6be381.css",
+    "main.js": "/exam-timer-app/static/js/main.26bf2687.js",
+    "static/js/453.7cc9bd86.chunk.js": "/exam-timer-app/static/js/453.7cc9bd86.chunk.js",
+    "index.html": "/exam-timer-app/index.html",
+    "main.cd6be381.css.map": "/exam-timer-app/static/css/main.cd6be381.css.map",
+    "main.26bf2687.js.map": "/exam-timer-app/static/js/main.26bf2687.js.map",
+    "453.7cc9bd86.chunk.js.map": "/exam-timer-app/static/js/453.7cc9bd86.chunk.js.map"
+  },
+  "entrypoints": [
+    "static/css/main.cd6be381.css",
+    "static/js/main.26bf2687.js"
+  ]
+}
