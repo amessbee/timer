@@ -14,3 +14,12 @@ code {
   font-family: source-code-pro, Menlo, Monaco, Consolas, 'Courier New',
     monospace;
 }
+
+.signature {
+  font-family: 'Satisfy', cursive; /* Apply the handwriting font */
+  font-size: 1.5rem; /* Adjust the size */
+  color: #4a5568; /* Dark gray color for the signature */
+  position: absolute;
+  bottom: 20px;
+  right: 20px;
+}
