@@ -1,17 +1,47 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { motion } from 'framer-motion';
-import { SunIcon, MoonIcon, PlayIcon, PauseIcon, PlusCircleIcon } from '@heroicons/react/24/solid';
-import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-  DialogFooter,
-} from "@/components/ui/dialog";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
+import { SunIcon, MoonIcon, PlayIcon, PauseIcon, PlusCircleIcon } from '@heroicons/react/24/solid'; // Import the new icon
 import DotsAnimation from './DotsAnimation';
 import RadialWaveAnimation from './RadialWaveAnimation';
+
+const RandomAnimation = () => (
+  <motion.div
+    className="absolute bg-pink-500 w-6 h-6 rounded-full"
+    animate={{
+      x: [0, 100, -100, 0],
+      y: [0, -50, 50, 0],
+      opacity: [1, 0.5, 1],
+    }}
+    transition={{
+      duration: 4,
+      repeat: Infinity,
+      ease: "easeInOut",
+    }}
+  />
+);
+
+const RandomSVGAnimation = () => {
+  const randomValues = Array.from({ length: 5 }, () => ({
+    cx: Math.random() * 100 + '%',
+    cy: Math.random() * 100 + '%',
+    r: Math.random() * 5 + 5,
+  }));
+
+  return (
+    <svg height="100vh" width="100vw" className="absolute top-0 left-0 pointer-events-none">
+      {randomValues.map((value, index) => (
+        <circle
+          key={index}
+          cx={value.cx}
+          cy={value.cy}
+          r={value.r}
+          fill="rgba(255, 255, 255, 0.5)"
+          className="animate-pulse"
+        />
+      ))}
+    </svg>
+  );
+};
 
 const ExamTimerClock = ({ durationInMinutes }) => {
   const [timeRemaining, setTimeRemaining] = useState(durationInMinutes * 60);
@@ -19,46 +49,42 @@ const ExamTimerClock = ({ durationInMinutes }) => {
   const [isPaused, setIsPaused] = useState(false);
   const [heading, setHeading] = useState("Exam Timer");
   const [isEditingHeading, setIsEditingHeading] = useState(false);
-  const [editingUnit, setEditingUnit] = useState(null);
-  const [theme, setTheme] = useState(() => localStorage.getItem('theme') || 'light');
-  const [animationsEnabled, setAnimationsEnabled] = useState(true);
-  const [showTimeInputDialog, setShowTimeInputDialog] = useState(false);
-  const [inputTime, setInputTime] = useState({ hours: '00', minutes: '00', seconds: '00' });
+  const [isEditingTime, setIsEditingTime] = useState(false);
+  
+  const [theme, setTheme] = useState(() => {
+    return localStorage.getItem('theme') || 'light';
+  });
+  
+  const [animationsEnabled, setAnimationsEnabled] = useState(true); // State for controlling animations
 
   const originalDuration = useRef(durationInMinutes * 60);
   const intervalRef = useRef(null);
 
+  const toggleTheme = () => {
+    const newTheme = theme === 'light' ? 'dark' : 'light';
+    setTheme(newTheme);
+    localStorage.setItem('theme', newTheme);
+  };
+
+  const toggleAnimations = () => {
+    setAnimationsEnabled((prev) => !prev);
+  };
+
+  const addFiveMinutes = () => {
+    if (window.confirm("Do you want to add 5 minutes to the timer?")) {
+      setTimeRemaining((prevTime) => prevTime + 5 * 60);
+    }
+  };
+
   useEffect(() => {
-    // Update input time when timeRemaining changes
-    const hours = Math.floor(timeRemaining / 3600).toString().padStart(2, '0');
-    const minutes = Math.floor((timeRemaining % 3600) / 60).toString().padStart(2, '0');
-    const seconds = (timeRemaining % 60).toString().padStart(2, '0');
-    setInputTime({ hours, minutes, seconds });
-  }, [timeRemaining]);
+    document.body.className = theme === 'dark' ? 'bg-gray-900 text-white' : 'bg-gray-100 text-black';
+  }, [theme]);
 
-  const handleTimeInputChange = (unit, value) => {
-    // Remove non-numeric characters and limit to 2 digits
-    const cleanValue = value.replace(/\D/g, '').slice(0, 2);
-    setInputTime(prev => ({ ...prev, [unit]: cleanValue.padStart(2, '0') }));
-  };
-
-  const handleStartTimer = () => {
-    setShowTimeInputDialog(true);
-  };
-
-  const startTimerWithInputTime = () => {
-    const totalSeconds = 
-      parseInt(inputTime.hours || '0') * 3600 + 
-      parseInt(inputTime.minutes || '0') * 60 + 
-      parseInt(inputTime.seconds || '0');
-    
-    setTimeRemaining(totalSeconds);
-    setShowTimeInputDialog(false);
-    
+  const startTimer = () => {
     if (!isRunning || isPaused) {
       setIsRunning(true);
       setIsPaused(false);
-      const endTime = Date.now() + totalSeconds * 1000;
+      const endTime = Date.now() + timeRemaining * 1000;
 
       intervalRef.current = setInterval(() => {
         const now = Date.now();
@@ -96,98 +122,89 @@ const ExamTimerClock = ({ durationInMinutes }) => {
     setTimeRemaining(originalDuration.current);
   };
 
-  const getTimeUnits = () => {
-    const hours = Math.floor(timeRemaining / 3600);
-    const minutes = Math.floor((timeRemaining % 3600) / 60);
-    const seconds = timeRemaining % 60;
-    return { hours, minutes, seconds };
+  const formatTime = (seconds) => {
+    const hours = Math.floor(seconds / 3600);
+    const minutes = Math.floor((seconds % 3600) / 60);
+    const remainingSeconds = seconds % 60;
+
+    return `${hours.toString().padStart(2, '0')}:${minutes
+      .toString().padStart(2, '0')}:${remainingSeconds.toString().padStart(2, '0')}`;
   };
-
-  const handleTimeUnitChange = (unit, value) => {
-    const timeUnits = getTimeUnits();
-    let newValue = parseInt(value) || 0;
-
-    // Enforce limits for each unit
-    if (unit === 'hours') {
-      newValue = Math.min(99, Math.max(0, newValue));
-    } else {
-      newValue = Math.min(59, Math.max(0, newValue));
-    }
-
-    const newTimeUnits = { ...timeUnits, [unit]: newValue };
-    const newTotalSeconds = 
-      newTimeUnits.hours * 3600 + 
-      newTimeUnits.minutes * 60 + 
-      newTimeUnits.seconds;
-    
-    setTimeRemaining(newTotalSeconds);
-  };
-
-  const TimeUnit = ({ unit, value, isEditing, onStartEdit, onEndEdit }) => {
-    const [localValue, setLocalValue] = useState(value.toString().padStart(2, '0'));
-
-    useEffect(() => {
-      setLocalValue(value.toString().padStart(2, '0'));
-    }, [value]);
-
-    if (isEditing) {
-      return (
-        <input
-          type="text"
-          value={localValue}
-          onChange={(e) => {
-            const newValue = e.target.value.slice(-2);
-            setLocalValue(newValue);
-            handleTimeUnitChange(unit, newValue);
-          }}
-          onBlur={() => onEndEdit()}
-          onKeyDown={(e) => {
-            if (e.key === 'Enter') onEndEdit();
-            if (e.key === 'Tab') e.preventDefault();
-          }}
-          className={`
-            w-[1.1em] 
-            text-center 
-            bg-transparent 
-            border-b-2 
-            border-current 
-            outline-none 
-            font-mono 
-            text-[8rem] 
-            sm:text-[10rem] 
-            md:text-[12rem]
-            p-0
-            m-0
-            focus:outline-none
-            [appearance:textfield]
-            [&::-webkit-outer-spin-button]:appearance-none
-            [&::-webkit-inner-spin-button]:appearance-none
-          `}
-          maxLength={2}
-          autoFocus
-        />
-      );
-    }
-
-    return (
-      <span
-        className="inline-block min-w-[1.1em] text-center cursor-pointer hover:text-blue-500 transition-colors duration-200"
-        onDoubleClick={() => onStartEdit()}
-      >
-        {value.toString().padStart(2, '0')}
-      </span>
-    );
-  };
-
-  const { hours, minutes, seconds } = getTimeUnits();
 
   return (
     <div className={`flex flex-col items-center justify-center h-screen transition-colors duration-500 ${theme === 'dark' ? 'bg-gray-900 text-white' : 'bg-gray-100 text-black'}`}>
-      {/* ... (previous UI elements remain the same until the buttons section) */}
+      {animationsEnabled && <RadialWaveAnimation />} {/* Conditional rendering based on animations state */}
+
+      {/* Theme toggle icon */}
+      <div className="absolute top-4 right-4 cursor-pointer">
+        <div onClick={toggleTheme}>
+          {theme === 'light' ? (
+            <MoonIcon className="w-8 h-8 text-gray-800 hover:text-gray-600" />
+          ) : (
+            <SunIcon className="w-8 h-8 text-yellow-400 hover:text-yellow-200" />
+          )}
+        </div>
+
+        {/* Animation toggle icon */}
+        <div onClick={toggleAnimations} className="mt-4">
+          {animationsEnabled ? (
+            <PauseIcon className="w-8 h-8 text-red-500 hover:text-red-400" />
+          ) : (
+            <PlayIcon className="w-8 h-8 text-green-500 hover:text-green-400" />
+          )}
+        </div>
+
+        {/* Add 5 minutes icon */}
+        <div onClick={addFiveMinutes} className="mt-4">
+          <PlusCircleIcon className="w-8 h-8 text-blue-500 hover:text-blue-400" />
+        </div>
+      </div>
+
+      {/* Editable Heading */}
+      {isEditingHeading ? (
+        <input
+          type="text"
+          value={heading}
+          onChange={(e) => setHeading(e.target.value)}
+          onBlur={() => setIsEditingHeading(false)}
+          autoFocus
+          className="text-5xl font-bold mb-8 bg-transparent outline-none"
+        />
+      ) : (
+        <h1
+          className="text-5xl font-bold mb-8 cursor-pointer"
+          onDoubleClick={() => setIsEditingHeading(true)}
+        >
+          {heading}
+        </h1>
+      )}
+
+      {/* Editable Timer */}
+      {isEditingTime ? (
+        <input
+          type="text"
+          value={formatTime(timeRemaining)}
+          onChange={(e) => setTimeRemaining(e.target.value)}
+          onBlur={() => setIsEditingTime(false)}
+          autoFocus
+          className="text-[8rem] sm:text-[10rem] md:text-[12rem] font-mono p-8 rounded-lg shadow-lg bg-transparent outline-none"
+        />
+      ) : (
+        <div
+          className="text-[8rem] sm:text-[10rem] md:text-[12rem] font-mono p-8 rounded-lg shadow-lg cursor-pointer"
+          onDoubleClick={() => setIsEditingTime(true)}
+        >
+          {formatTime(timeRemaining)}
+        </div>
+      )}
+
+      {timeRemaining === 0 && (
+        <p className="mt-8 text-4xl font-bold text-red-600">Time's up!</p>
+      )}
 
       <div className="mt-8 flex space-x-4">
         <button
-          onClick={handleStartTimer}
+          onClick={startTimer}
           className="px-6 py-3 bg-green-500 text-white rounded-lg shadow hover:bg-green-600"
         >
           Start
@@ -211,54 +228,6 @@ const ExamTimerClock = ({ durationInMinutes }) => {
           Reset
         </button>
       </div>
-
-      <Dialog open={showTimeInputDialog} onOpenChange={setShowTimeInputDialog}>
-        <DialogContent className="sm:max-w-md">
-          <DialogHeader>
-            <DialogTitle>Set Timer Duration</DialogTitle>
-          </DialogHeader>
-          <div className="grid grid-cols-3 gap-4 py-4">
-            <div className="flex flex-col items-center">
-              <label className="text-sm font-medium mb-2">Hours</label>
-              <Input
-                type="text"
-                value={inputTime.hours}
-                onChange={(e) => handleTimeInputChange('hours', e.target.value)}
-                className="text-center text-lg"
-                maxLength={2}
-              />
-            </div>
-            <div className="flex flex-col items-center">
-              <label className="text-sm font-medium mb-2">Minutes</label>
-              <Input
-                type="text"
-                value={inputTime.minutes}
-                onChange={(e) => handleTimeInputChange('minutes', e.target.value)}
-                className="text-center text-lg"
-                maxLength={2}
-              />
-            </div>
-            <div className="flex flex-col items-center">
-              <label className="text-sm font-medium mb-2">Seconds</label>
-              <Input
-                type="text"
-                value={inputTime.seconds}
-                onChange={(e) => handleTimeInputChange('seconds', e.target.value)}
-                className="text-center text-lg"
-                maxLength={2}
-              />
-            </div>
-          </div>
-          <DialogFooter>
-            <Button onClick={() => setShowTimeInputDialog(false)} variant="outline">
-              Cancel
-            </Button>
-            <Button onClick={startTimerWithInputTime} className="bg-green-500 hover:bg-green-600">
-              Start Timer
-            </Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
 
       <div className="signature absolute bottom-4 right-6 text-4xl text-gray-700 z-20">
         ~ Mudassir Shabbir
