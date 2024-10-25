@@ -12,7 +12,7 @@ This project is an exam timer application built with JavaScript, HTML, and CSS. 
 
 ## Getting Started
 
-To get a local copy up and running follow these simple steps.
+For a demonstration view the output at: https://amessbee.github.io/exam-timer-app/ - to get a local copy up and running follow these simple steps.
 
 ### Prerequisites
 
@@ -28,7 +28,7 @@ Make sure you have [Node.js](https://nodejs.org/) and npm installed on your mach
 ```sh
 npm install
 ```
-3. Run the app in the development mode. Open http://localhost:3000 to view it in your browser.
+3. Run the app in the development mode. Open http://localhost:3000 to view it in your browser. For a demonstration view the output at: https://amessbee.github.io/exam-timer-app/
 
 ```sh
 npm start

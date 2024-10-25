@@ -12,19 +12,43 @@ const ComplexWaveAnimation = () => {
     canvas.width = window.innerWidth;
     canvas.height = window.innerHeight;
 
-    // List of 10 complex geometric functions
+    // Function to get a random position on the screen
+    const getRandomCenter = () => ({
+      x: Math.random() * canvas.width,
+      y: Math.random() * canvas.height,
+    });
+    // Generate 10 random centers
+    const randomCenters = Array.from({ length: 10 }, () => getRandomCenter(canvas));
+
+
+    // Generate 10 unique sine wave functions
     const geometricFunctions = [
-      (wave) => { wave.x += wave.speed; wave.y += Math.sin(wave.x * 0.05) * 10; },   // Sine wave
-      (wave) => { wave.angle += wave.speed * 0.05; wave.x = canvas.width / 2 + wave.radius * Math.cos(wave.angle); wave.y = canvas.height / 2 + wave.radius * Math.sin(wave.angle); wave.radius += wave.growthRate; },  // Spiral
-      (wave) => { wave.x += wave.speed; wave.y += Math.cos(wave.x * 0.03) * 20; },   // Cosine wave
+      (wave) => { wave.x += wave.speed; wave.y += Math.sin(wave.x * 0.005) * 5; },   // Sine wave
+      (wave) => { wave.x -= wave.speed; wave.y += Math.sin(wave.x * 0.005) * 5; },   // Reverse Sine wave
+      (wave) => { 
+        wave.angle += wave.speed * 0.05;
+        wave.x = randomCenters[0].x + wave.radius * Math.cos(wave.angle);
+        wave.y = randomCenters[0].y + wave.radius * Math.sin(wave.angle);
+        wave.radius += wave.growthRate;
+      },
+      (wave) => { 
+        wave.angle += wave.speed * 0.05;
+        wave.x = randomCenters[1].x + wave.radius * Math.cos(wave.angle);
+        wave.y = randomCenters[1].y + wave.radius * Math.sin(wave.angle);
+        wave.radius += wave.growthRate;
+      },
       (wave) => { wave.x += Math.cos(wave.angle) * wave.speed; wave.y += Math.sin(wave.angle) * wave.speed; wave.angle += 0.05; },  // Circle motion
-      (wave) => { wave.x += wave.speed; wave.y += Math.tan(wave.x * 0.02) * 5; },   // Tangent wave
+      // (wave) => { wave.x += wave.speed; wave.y += Math.tan(wave.x * 0.002) * 5; },   // Tangent wave
       (wave) => { wave.x = wave.x + Math.cos(wave.angle) * wave.radius; wave.y = wave.y + Math.sin(wave.angle) * wave.radius; wave.angle += wave.growthRate; }, // Elliptical motion
-      (wave) => { wave.x += wave.speed; wave.y += (Math.pow(wave.x * 0.05, 2) * 0.5) - 50; },  // Parabolic curve
+      // (wave) => { wave.x += wave.speed; wave.y += (Math.pow(wave.x * 0.05, 2) * 0.5) - 50; },  // Parabolic curve
       (wave) => { wave.x += Math.sin(wave.angle) * wave.speed; wave.y += Math.cos(wave.angle) * wave.speed; wave.angle += wave.growthRate; },  // Hypotrochoid (circular path within a circle)
-      (wave) => { wave.x += wave.speed; wave.y += Math.abs(Math.sin(wave.x * 0.02) * 50); },  // Abs(sine) wave (bounces)
-      (wave) => { wave.x += wave.speed; wave.y = 300 + Math.sin(wave.angle) * wave.radius; wave.angle += 0.03; wave.radius += wave.growthRate; },  // Vertical sine waves
+      // (wave) => { wave.x += wave.speed; wave.y += Math.abs(Math.sin(wave.x * 0.02) * 50); },  // Abs(sine) wave (bounces)
+      // (wave) => { wave.x += wave.speed; wave.y = 300 + Math.sin(wave.angle) * wave.radius; wave.angle += 0.03; wave.radius += wave.growthRate; },  // Vertical sine waves
     ];
+  
+    // Generate geometric functions using 10 different random centers
+    // const geometricFunctions = randomCenters.map((_, index) => generateSineWaveFunctions(index)).flat();
+
 
     // Geometric Wave class for various complex functions
     class GeometricWave {
@@ -37,6 +61,7 @@ const ComplexWaveAnimation = () => {
         this.speed = Math.random() * 2 + 1;  // Speed of movement
         this.opacity = 1;  // Initial opacity
         this.fadeRate = 0.005;  // Fade out rate
+        this.sizeFactor = Math.random();  // Random size factor
         this.animationFunc = geometricFunctions[Math.floor(Math.random() * geometricFunctions.length)];  // Randomly select a geometric function
       }
 
@@ -47,12 +72,12 @@ const ComplexWaveAnimation = () => {
       }
 
       // Draw the geometric wave
-      draw() {
+      draw( factor=1 ) {
         if (this.opacity > 0) {
           ctx.strokeStyle = `rgba(255, 255, 255, ${this.opacity})`;
-          ctx.lineWidth = 2;
+          ctx.lineWidth = this.radius*this.radius * 0.01;
           ctx.beginPath();
-          ctx.arc(this.x, this.y, 10, 0, Math.PI * 2);
+          ctx.arc(this.x, this.y, factor*50, 0, Math.PI * 2);
           ctx.stroke();
         }
       }
@@ -68,7 +93,7 @@ const ComplexWaveAnimation = () => {
       ctx.clearRect(0, 0, canvas.width, canvas.height);  // Clear the canvas
       waves.forEach((wave, index) => {
         wave.update();
-        wave.draw();
+        wave.draw( wave.sizeFactor );  // Draw the wave with a random size factor
 
         // Remove the wave if it has faded out
         if (wave.opacity <= 0) {
@@ -77,7 +102,7 @@ const ComplexWaveAnimation = () => {
       });
 
       // Generate new waves occasionally
-      if (Math.random() < 0.05) {
+      if (Math.random() < 0.1) {
         createWaves();
       }
 
