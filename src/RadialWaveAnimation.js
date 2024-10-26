@@ -37,6 +37,27 @@ const ComplexWaveAnimation = () => {
         wave.y = randomCenters[1].y + wave.radius * Math.sin(wave.angle);
         wave.radius += wave.growthRate;
       },
+
+      (wave) => { 
+        wave.angle += wave.speed * 0.05;
+        wave.x = randomCenters[2].x + wave.radius * Math.cos(wave.angle);
+        wave.y = randomCenters[2].y + wave.radius * Math.sin(wave.angle);
+        wave.radius += wave.growthRate;
+      },
+
+      (wave) => { 
+        wave.angle += wave.speed * 0.05;
+        wave.x = randomCenters[3].x + wave.radius * Math.cos(wave.angle);
+        wave.y = randomCenters[3].y + wave.radius * Math.sin(wave.angle);
+        wave.radius += wave.growthRate;
+      },
+
+      (wave) => { 
+        wave.angle += wave.speed * 0.05;
+        wave.x = randomCenters[4].x + wave.radius * Math.cos(wave.angle);
+        wave.y = randomCenters[4].y + wave.radius * Math.sin(wave.angle);
+        wave.radius += wave.growthRate;
+      },
       (wave) => { wave.x += Math.cos(wave.angle) * wave.speed; wave.y += Math.sin(wave.angle) * wave.speed; wave.angle += 0.05; },  // Circle motion
       // (wave) => { wave.x += wave.speed; wave.y += Math.tan(wave.x * 0.002) * 5; },   // Tangent wave
       (wave) => { wave.x = wave.x + Math.cos(wave.angle) * wave.radius; wave.y = wave.y + Math.sin(wave.angle) * wave.radius; wave.angle += wave.growthRate; }, // Elliptical motion
