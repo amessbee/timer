@@ -1,15 +1,15 @@
 {
   "files": {
-    "main.css": "/exam-timer-app/static/css/main.f39bd055.css",
-    "main.js": "/exam-timer-app/static/js/main.3a58de21.js",
-    "static/js/453.7cc9bd86.chunk.js": "/exam-timer-app/static/js/453.7cc9bd86.chunk.js",
-    "index.html": "/exam-timer-app/index.html",
-    "main.f39bd055.css.map": "/exam-timer-app/static/css/main.f39bd055.css.map",
-    "main.3a58de21.js.map": "/exam-timer-app/static/js/main.3a58de21.js.map",
-    "453.7cc9bd86.chunk.js.map": "/exam-timer-app/static/js/453.7cc9bd86.chunk.js.map"
+    "main.css": "/timer/static/css/main.f39bd055.css",
+    "main.js": "/timer/static/js/main.f93e3ccb.js",
+    "static/js/453.67bc05c0.chunk.js": "/timer/static/js/453.67bc05c0.chunk.js",
+    "index.html": "/timer/index.html",
+    "main.f39bd055.css.map": "/timer/static/css/main.f39bd055.css.map",
+    "main.f93e3ccb.js.map": "/timer/static/js/main.f93e3ccb.js.map",
+    "453.67bc05c0.chunk.js.map": "/timer/static/js/453.67bc05c0.chunk.js.map"
   },
   "entrypoints": [
     "static/css/main.f39bd055.css",
-    "static/js/main.3a58de21.js"
+    "static/js/main.f93e3ccb.js"
   ]
 }
