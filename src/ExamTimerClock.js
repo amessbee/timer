@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { motion } from 'framer-motion';
-import { SunIcon, MoonIcon, PlayIcon, PauseIcon, PlusCircleIcon } from '@heroicons/react/24/solid'; // Import the new icon
+import { SunIcon, MoonIcon, PlayIcon, PauseIcon, PlusCircleIcon, ArrowsPointingOutIcon } from '@heroicons/react/24/solid'; // Import the new icon
 import DotsAnimation from './DotsAnimation';
 import RadialWaveAnimation from './RadialWaveAnimation';
 
@@ -73,6 +73,16 @@ const ExamTimerClock = ({ durationInMinutes }) => {
   const addFiveMinutes = () => {
     if (window.confirm("Do you want to add 5 minutes to the timer?")) {
       setTimeRemaining((prevTime) => prevTime + 5 * 60);
+    }
+  };
+
+  const toggleFullScreen = () => {
+    if (!document.fullscreenElement) {
+      document.documentElement.requestFullscreen();
+    } else {
+      if (document.exitFullscreen) {
+        document.exitFullscreen();
+      }
     }
   };
 
@@ -157,6 +167,11 @@ const ExamTimerClock = ({ durationInMinutes }) => {
         {/* Add 5 minutes icon */}
         <div onClick={addFiveMinutes} className="mt-4">
           <PlusCircleIcon className="w-8 h-8 text-blue-500 hover:text-blue-400" />
+        </div>
+
+        {/* Full-screen toggle icon */}
+        <div onClick={toggleFullScreen} className="mt-4">
+          <ArrowsPointingOutIcon className="w-8 h-8 text-gray-800 hover:text-gray-600 cursor-pointer" />
         </div>
       </div>
 

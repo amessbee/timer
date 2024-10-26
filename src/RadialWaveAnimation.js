@@ -102,7 +102,7 @@ const ComplexWaveAnimation = () => {
       });
 
       // Generate new waves occasionally
-      if (Math.random() < 0.1) {
+      if (Math.random() < 0.5) {
         createWaves();
       }
 
