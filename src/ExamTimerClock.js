@@ -13,7 +13,7 @@ import {
 import DotsAnimation from './DotsAnimation';
 import RadialWaveAnimation from './RadialWaveAnimation';
 
-const ExamTimerClock = ({ durationInMinutes }) => {
+const ExamTimerClock = ({ durationInMinutes = 60 }) => {
   const [timeRemaining, setTimeRemaining] = useState(durationInMinutes * 60);
   const [isRunning, setIsRunning] = useState(false);
   const [isPaused, setIsPaused] = useState(false);
@@ -28,6 +28,25 @@ const ExamTimerClock = ({ durationInMinutes }) => {
   const originalDuration = useRef(durationInMinutes * 60);
   const intervalRef = useRef(null);
   const pausedTimeRef = useRef(null);
+
+  // Preset durations in minutes
+  const presetDurations = [15, 30, 60, 90, 100, 120, 150, 180];
+
+  const setPresetDuration = (minutes) => {
+    if (isRunning || isPaused) {
+      if (window.confirm("Changing duration will reset the timer. Continue?")) {
+        clearInterval(intervalRef.current);
+        setIsRunning(false);
+        setIsPaused(false);
+        setTimeRemaining(minutes * 60);
+        originalDuration.current = minutes * 60;
+        pausedTimeRef.current = null;
+      }
+    } else {
+      setTimeRemaining(minutes * 60);
+      originalDuration.current = minutes * 60;
+    }
+  };
 
   const toggleTheme = () => {
     const newTheme = theme === 'light' ? 'dark' : 'light';
@@ -78,8 +97,6 @@ const ExamTimerClock = ({ durationInMinutes }) => {
       setIsRunning(true);
       setIsPaused(false);
       
-      // If resuming from pause, use the remaining time
-      // Otherwise, start fresh
       const endTime = isPaused 
         ? Date.now() + (timeRemaining * 1000)
         : Date.now() + (timeRemaining * 1000);
@@ -107,7 +124,6 @@ const ExamTimerClock = ({ durationInMinutes }) => {
       clearInterval(intervalRef.current);
       setIsRunning(false);
       setIsPaused(true);
-      // Store the current remaining time
       const remaining = Math.max(0, Math.floor((pausedTimeRef.current - Date.now()) / 1000));
       setTimeRemaining(remaining);
     }
@@ -198,6 +214,25 @@ const ExamTimerClock = ({ durationInMinutes }) => {
             </h1>
           )}
 
+          {/* Preset Duration Buttons */}
+          <div className="flex flex-wrap justify-center gap-2 mb-8 max-w-4xl px-4">
+            {presetDurations.map((duration) => (
+              <button
+                key={duration}
+                onClick={() => setPresetDuration(duration)}
+                className={`px-4 py-2 rounded-lg text-white transition-colors
+                  ${timeRemaining === duration * 60 
+                    ? 'bg-blue-600 ring-2 ring-blue-400' 
+                    : 'bg-blue-500 hover:bg-blue-600'
+                  }
+                  ${(isRunning || isPaused) ? 'opacity-50' : 'opacity-100'}
+                `}
+              >
+                {duration} min
+              </button>
+            ))}
+          </div>
+
           {isEditingTime ? (
             <input
               type="text"
@@ -223,7 +258,7 @@ const ExamTimerClock = ({ durationInMinutes }) => {
             <p className="mt-8 text-4xl font-bold text-red-600">Time's up!</p>
           )}
 
-          <div className="mt-8 flex space-x-4">
+          <div className="mt-8 flex flex-wrap justify-center gap-4">
             <button
               onClick={startTimer}
               disabled={isRunning}
