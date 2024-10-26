@@ -1,8 +1,8 @@
 {
-  "name": "exam-timer-app",
+  "name": "timer",
   "version": "0.1.0",
   "private": true,
-  "homepage": "https://amessbee.github.io/exam-timer-app",
+  "homepage": "https://amessbee.github.io/timer",
   "dependencies": {
     "@heroicons/react": "^2.1.5",
     "@testing-library/jest-dom": "^5.17.0",

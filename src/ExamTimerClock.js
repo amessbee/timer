@@ -384,9 +384,9 @@ const ExamTimerClock = ({ durationInMinutes = 60 }) => {
         </>
       )}
 
-      <div className="signature absolute bottom-4 right-6 text-4xl text-gray-700 z-20">
+      <a href="https://github.com/amessbee/timer" target="_blank" rel="noopener noreferrer" className="signature absolute bottom-4 right-6 text-4xl text-gray-700 z-20">
         ~ Mudassir Shabbir
-      </div>
+      </a>
     </div>
   );
 };
