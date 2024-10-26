@@ -1,5 +1,4 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { motion } from 'framer-motion';
 import {
   SunIcon,
   MoonIcon,
@@ -10,48 +9,9 @@ import {
   ArrowsPointingInIcon,
   EyeIcon,
   EyeSlashIcon,
-} from '@heroicons/react/24/solid'; // Import the new icon
+} from '@heroicons/react/24/solid';
 import DotsAnimation from './DotsAnimation';
 import RadialWaveAnimation from './RadialWaveAnimation';
-
-const RandomAnimation = () => (
-  <motion.div
-    className="absolute bg-pink-500 w-6 h-6 rounded-full"
-    animate={{
-      x: [0, 100, -100, 0],
-      y: [0, -50, 50, 0],
-      opacity: [1, 0.5, 1],
-    }}
-    transition={{
-      duration: 4,
-      repeat: Infinity,
-      ease: "easeInOut",
-    }}
-  />
-);
-
-const RandomSVGAnimation = () => {
-  const randomValues = Array.from({ length: 5 }, () => ({
-    cx: Math.random() * 100 + '%',
-    cy: Math.random() * 100 + '%',
-    r: Math.random() * 5 + 5,
-  }));
-
-  return (
-    <svg height="100vh" width="100vw" className="absolute top-0 left-0 pointer-events-none">
-      {randomValues.map((value, index) => (
-        <circle
-          key={index}
-          cx={value.cx}
-          cy={value.cy}
-          r={value.r}
-          fill="rgba(255, 255, 255, 0.5)"
-          className="animate-pulse"
-        />
-      ))}
-    </svg>
-  );
-};
 
 const ExamTimerClock = ({ durationInMinutes }) => {
   const [timeRemaining, setTimeRemaining] = useState(durationInMinutes * 60);
@@ -62,11 +22,12 @@ const ExamTimerClock = ({ durationInMinutes }) => {
   const [isEditingTime, setIsEditingTime] = useState(false);
   const [theme, setTheme] = useState(() => localStorage.getItem('theme') || 'light');
   const [animationsEnabled, setAnimationsEnabled] = useState(true);
-  const [isFullScreen, setIsFullScreen] = useState(false); // Track full-screen state
-  const [isHidden, setIsHidden] = useState(false); // Track visibility of timer and text
+  const [isFullScreen, setIsFullScreen] = useState(false);
+  const [isHidden, setIsHidden] = useState(false);
 
   const originalDuration = useRef(durationInMinutes * 60);
   const intervalRef = useRef(null);
+  const pausedTimeRef = useRef(null);
 
   const toggleTheme = () => {
     const newTheme = theme === 'light' ? 'dark' : 'light';
@@ -81,6 +42,9 @@ const ExamTimerClock = ({ durationInMinutes }) => {
   const addFiveMinutes = () => {
     if (window.confirm("Do you want to add 5 minutes to the timer?")) {
       setTimeRemaining((prevTime) => prevTime + 5 * 60);
+      if (isRunning) {
+        pausedTimeRef.current = Date.now() + ((timeRemaining + 5 * 60) * 1000);
+      }
     }
   };
 
@@ -96,17 +60,13 @@ const ExamTimerClock = ({ durationInMinutes }) => {
     setIsHidden((prev) => !prev);
   };
 
-  // Listen for full-screen change events to update the state
   useEffect(() => {
     const onFullScreenChange = () => {
       setIsFullScreen(!!document.fullscreenElement);
     };
 
     document.addEventListener("fullscreenchange", onFullScreenChange);
-
-    return () => {
-      document.removeEventListener("fullscreenchange", onFullScreenChange);
-    };
+    return () => document.removeEventListener("fullscreenchange", onFullScreenChange);
   }, []);
 
   useEffect(() => {
@@ -114,19 +74,28 @@ const ExamTimerClock = ({ durationInMinutes }) => {
   }, [theme]);
 
   const startTimer = () => {
-    if (!isRunning || isPaused) {
+    if (!isRunning) {
       setIsRunning(true);
       setIsPaused(false);
-      const endTime = Date.now() + timeRemaining * 1000;
+      
+      // If resuming from pause, use the remaining time
+      // Otherwise, start fresh
+      const endTime = isPaused 
+        ? Date.now() + (timeRemaining * 1000)
+        : Date.now() + (timeRemaining * 1000);
+      
+      pausedTimeRef.current = endTime;
 
       intervalRef.current = setInterval(() => {
         const now = Date.now();
-        const remaining = Math.max(0, Math.floor((endTime - now) / 1000));
+        const remaining = Math.max(0, Math.floor((pausedTimeRef.current - now) / 1000));
+        
         setTimeRemaining(remaining);
 
         if (remaining <= 0) {
           clearInterval(intervalRef.current);
           setIsRunning(false);
+          setIsPaused(false);
           setTimeRemaining(0);
         }
       }, 1000);
@@ -136,8 +105,11 @@ const ExamTimerClock = ({ durationInMinutes }) => {
   const pauseTimer = () => {
     if (isRunning) {
       clearInterval(intervalRef.current);
-      setIsPaused(true);
       setIsRunning(false);
+      setIsPaused(true);
+      // Store the current remaining time
+      const remaining = Math.max(0, Math.floor((pausedTimeRef.current - Date.now()) / 1000));
+      setTimeRemaining(remaining);
     }
   };
 
@@ -146,6 +118,7 @@ const ExamTimerClock = ({ durationInMinutes }) => {
     setIsRunning(false);
     setIsPaused(false);
     setTimeRemaining(originalDuration.current);
+    pausedTimeRef.current = null;
   };
 
   const resetTimer = () => {
@@ -153,22 +126,20 @@ const ExamTimerClock = ({ durationInMinutes }) => {
     setIsRunning(false);
     setIsPaused(false);
     setTimeRemaining(originalDuration.current);
+    pausedTimeRef.current = null;
   };
 
   const formatTime = (seconds) => {
     const hours = Math.floor(seconds / 3600);
     const minutes = Math.floor((seconds % 3600) / 60);
     const remainingSeconds = seconds % 60;
-
-    return `${hours.toString().padStart(2, '0')}:${minutes
-      .toString().padStart(2, '0')}:${remainingSeconds.toString().padStart(2, '0')}`;
+    return `${hours.toString().padStart(2, '0')}:${minutes.toString().padStart(2, '0')}:${remainingSeconds.toString().padStart(2, '0')}`;
   };
 
   return (
     <div className={`flex flex-col items-center justify-center h-screen transition-colors duration-500 ${theme === 'dark' ? 'bg-gray-900 text-white' : 'bg-gray-100 text-black'}`}>
-      {animationsEnabled && <RadialWaveAnimation />} {/* Conditional rendering based on animations state */}
+      {animationsEnabled && <RadialWaveAnimation />}
 
-      {/* Theme toggle icon */}
       <div className="absolute top-4 right-4 cursor-pointer">
         <div onClick={toggleTheme}>
           {theme === 'light' ? (
@@ -178,7 +149,6 @@ const ExamTimerClock = ({ durationInMinutes }) => {
           )}
         </div>
 
-        {/* Animation toggle icon */}
         <div onClick={toggleAnimations} className="mt-4">
           {animationsEnabled ? (
             <PauseIcon className="w-8 h-8 text-red-500 hover:text-red-400" />
@@ -187,29 +157,18 @@ const ExamTimerClock = ({ durationInMinutes }) => {
           )}
         </div>
 
-        {/* Add 5 minutes icon */}
         <div onClick={addFiveMinutes} className="mt-4">
           <PlusCircleIcon className="w-8 h-8 text-blue-500 hover:text-blue-400" />
         </div>
 
-        {/* Full-screen toggle icon */}
         <div onClick={toggleFullScreen} className="mt-4">
-        {isFullScreen ? (
-          <ArrowsPointingInIcon
-            className={`w-8 h-8 cursor-pointer ${
-              theme === 'dark' ? 'text-gray-200 hover:text-gray-400' : 'text-gray-800 hover:text-gray-600'
-            }`}
-          />
-        ) : (
-          <ArrowsPointingOutIcon
-            className={`w-8 h-8 cursor-pointer ${
-              theme === 'dark' ? 'text-gray-200 hover:text-gray-400' : 'text-gray-800 hover:text-gray-600'
-            }`}
-            />
+          {isFullScreen ? (
+            <ArrowsPointingInIcon className={`w-8 h-8 cursor-pointer ${theme === 'dark' ? 'text-gray-200 hover:text-gray-400' : 'text-gray-800 hover:text-gray-600'}`} />
+          ) : (
+            <ArrowsPointingOutIcon className={`w-8 h-8 cursor-pointer ${theme === 'dark' ? 'text-gray-200 hover:text-gray-400' : 'text-gray-800 hover:text-gray-600'}`} />
           )}
         </div>
 
-        {/* Visibility toggle icon */}
         <div onClick={toggleVisibility} className="mt-4">
           {isHidden ? (
             <EyeSlashIcon className="w-8 h-8 text-red-500 hover:text-red-400 cursor-pointer" />
@@ -219,10 +178,8 @@ const ExamTimerClock = ({ durationInMinutes }) => {
         </div>
       </div>
 
-      {/* Conditionally render the timer and text based on visibility */}
       {!isHidden && (
         <>
-          {/* Editable Heading */}
           {isEditingHeading ? (
             <input
               type="text"
@@ -230,7 +187,7 @@ const ExamTimerClock = ({ durationInMinutes }) => {
               onChange={(e) => setHeading(e.target.value)}
               onBlur={() => setIsEditingHeading(false)}
               autoFocus
-              className="text-5xl font-bold mb-8 bg-transparent outline-none"
+              className="text-5xl font-bold mb-8 bg-transparent outline-none text-center"
             />
           ) : (
             <h1
@@ -241,15 +198,17 @@ const ExamTimerClock = ({ durationInMinutes }) => {
             </h1>
           )}
 
-          {/* Editable Timer */}
           {isEditingTime ? (
             <input
               type="text"
               value={formatTime(timeRemaining)}
-              onChange={(e) => setTimeRemaining(e.target.value)}
+              onChange={(e) => {
+                // Add time input validation here if needed
+                setTimeRemaining(e.target.value);
+              }}
               onBlur={() => setIsEditingTime(false)}
               autoFocus
-              className="text-[8rem] sm:text-[10rem] md:text-[12rem] font-mono p-8 rounded-lg shadow-lg bg-transparent outline-none"
+              className="text-[8rem] sm:text-[10rem] md:text-[12rem] font-mono p-8 rounded-lg shadow-lg bg-transparent outline-none text-center"
             />
           ) : (
             <div
@@ -267,19 +226,28 @@ const ExamTimerClock = ({ durationInMinutes }) => {
           <div className="mt-8 flex space-x-4">
             <button
               onClick={startTimer}
-              className="px-6 py-3 bg-green-500 text-white rounded-lg shadow hover:bg-green-600"
+              disabled={isRunning}
+              className={`px-6 py-3 text-white rounded-lg shadow ${
+                isRunning ? 'bg-gray-500 cursor-not-allowed' : 'bg-green-500 hover:bg-green-600'
+              }`}
             >
-              Start
+              {isPaused ? 'Resume' : 'Start'}
             </button>
             <button
               onClick={pauseTimer}
-              className="px-6 py-3 bg-yellow-500 text-white rounded-lg shadow hover:bg-yellow-600"
+              disabled={!isRunning}
+              className={`px-6 py-3 text-white rounded-lg shadow ${
+                !isRunning ? 'bg-gray-500 cursor-not-allowed' : 'bg-yellow-500 hover:bg-yellow-600'
+              }`}
             >
               Pause
             </button>
             <button
               onClick={stopTimer}
-              className="px-6 py-3 bg-red-500 text-white rounded-lg shadow hover:bg-red-600"
+              disabled={!isRunning && !isPaused}
+              className={`px-6 py-3 text-white rounded-lg shadow ${
+                (!isRunning && !isPaused) ? 'bg-gray-500 cursor-not-allowed' : 'bg-red-500 hover:bg-red-600'
+              }`}
             >
               Stop
             </button>
