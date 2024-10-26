@@ -1,12 +1,13 @@
 import React, { useEffect, useRef } from 'react';
 
-const ComplexWaveAnimation = () => {
+const ComplexWaveAnimation = ({ animationIntensity }) => {
   const canvasRef = useRef(null);
 
   useEffect(() => {
     const canvas = canvasRef.current;
     const ctx = canvas.getContext('2d');
     const waves = [];
+    const intensity = 0.01*animationIntensity*0.01*animationIntensity || 0.05;
 
     // Set canvas size
     canvas.width = window.innerWidth;
@@ -123,7 +124,7 @@ const ComplexWaveAnimation = () => {
       });
 
       // Generate new waves occasionally
-      if (Math.random() < 0.5) {
+      if (Math.random() < intensity) {
         createWaves();
       }
 
@@ -141,7 +142,7 @@ const ComplexWaveAnimation = () => {
     return () => {
       window.removeEventListener('resize', null);
     };
-  }, []);
+  }, [animationIntensity]); // Add animationIntensity as a dependency
 
   return <canvas ref={canvasRef} className="absolute top-0 left-0 pointer-events-none z-0"></canvas>;
 };

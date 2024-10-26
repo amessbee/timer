@@ -9,6 +9,7 @@ import {
   ArrowsPointingInIcon,
   EyeIcon,
   EyeSlashIcon,
+  SpeakerWaveIcon,
 } from '@heroicons/react/24/solid';
 import DotsAnimation from './DotsAnimation';
 import RadialWaveAnimation from './RadialWaveAnimation';
@@ -24,11 +25,16 @@ const ExamTimerClock = ({ durationInMinutes = 60 }) => {
   const [animationsEnabled, setAnimationsEnabled] = useState(true);
   const [isFullScreen, setIsFullScreen] = useState(false);
   const [isHidden, setIsHidden] = useState(false);
+  const [animationIntensity, setAnimationIntensity] = useState(10); // 0-100 scale
+  
 
   const originalDuration = useRef(durationInMinutes * 60);
   const intervalRef = useRef(null);
   const pausedTimeRef = useRef(null);
-
+    
+  // Animation control popup state
+  const [showAnimationControls, setShowAnimationControls] = useState(false);
+  const animationControlsRef = useRef(null);
   // Preset durations in minutes
   const presetDurations = [15, 30, 60, 90, 100, 120, 150, 180];
 
@@ -80,12 +86,25 @@ const ExamTimerClock = ({ durationInMinutes = 60 }) => {
   };
 
   useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (
+        animationControlsRef.current &&
+        !animationControlsRef.current.contains(event.target)
+      ) {
+        setShowAnimationControls(false);
+      }
+    };
     const onFullScreenChange = () => {
       setIsFullScreen(!!document.fullscreenElement);
     };
 
+    // Add event listener
+    document.addEventListener('mousedown', handleClickOutside);
     document.addEventListener("fullscreenchange", onFullScreenChange);
-    return () => document.removeEventListener("fullscreenchange", onFullScreenChange);
+    return () => {
+      document.removeEventListener("fullscreenchange", onFullScreenChange);
+      document.removeEventListener('mousedown', handleClickOutside);
+    }
   }, []);
 
   useEffect(() => {
@@ -153,10 +172,14 @@ const ExamTimerClock = ({ durationInMinutes = 60 }) => {
   };
 
   return (
-    <div className={`flex flex-col items-center justify-center h-screen transition-colors duration-500 ${theme === 'dark' ? 'bg-gray-900 text-white' : 'bg-gray-100 text-black'}`}>
-      {animationsEnabled && <RadialWaveAnimation />}
+    <div className={`flex flex-col items-center justify-center h-screen transition-colors duration-1000 ${theme === 'dark' ? 'bg-gray-900 text-white' : 'bg-gray-100 text-black'}`}>
+      {animationsEnabled && (
+          <RadialWaveAnimation animationIntensity={animationIntensity}  />
+        
+      )}
 
       <div className="absolute top-4 right-4 cursor-pointer">
+        {/* Previous icons */}
         <div onClick={toggleTheme}>
           {theme === 'light' ? (
             <MoonIcon className="w-8 h-8 text-gray-800 hover:text-gray-600" />
@@ -165,14 +188,79 @@ const ExamTimerClock = ({ durationInMinutes = 60 }) => {
           )}
         </div>
 
-        <div onClick={toggleAnimations} className="mt-4">
-          {animationsEnabled ? (
-            <PauseIcon className="w-8 h-8 text-red-500 hover:text-red-400" />
-          ) : (
-            <PlayIcon className="w-8 h-8 text-green-500 hover:text-green-400" />
+        {/* Animation controls with popup */}
+        <div className="relative mt-4">
+          <div 
+            onClick={() => setShowAnimationControls(!showAnimationControls)}
+            // onMouseEnter={() => setShowAnimationControls(true)}
+            className="relative"
+          >
+            {animationsEnabled ? (
+              <PauseIcon className="w-8 h-8 text-red-500 hover:text-red-400" />
+            ) : (
+              <PlayIcon className="w-8 h-8 text-green-500 hover:text-green-400" />
+            )}
+          </div>
+
+          {/* Animation Controls Popup */}
+          {showAnimationControls && (
+            <div 
+            ref={animationControlsRef}
+              className={`absolute right-10 top-0 p-4 rounded-lg shadow-lg z-50 w-64
+                ${theme === 'dark' ? 'bg-gray-800' : 'bg-white'}`}
+            >
+              <div className="flex items-center justify-between mb-4">
+                <SpeakerWaveIcon className="w-6 h-6" />
+                <span className="ml-2">Animation Intensity</span>
+              </div>
+              
+              <div className="flex items-center space-x-2">
+                <input
+                  type="range"
+                  min="0"
+                  max="100"
+                  value={animationIntensity}
+                  onChange={(e) => setAnimationIntensity(Number(e.target.value))}
+                  className={`w-full h-2 rounded-lg appearance-none cursor-pointer
+                    ${theme === 'dark' ? 'bg-gray-600' : 'bg-gray-200'}
+                    [&::-webkit-slider-thumb]:appearance-none
+                    [&::-webkit-slider-thumb]:w-4
+                    [&::-webkit-slider-thumb]:h-4
+                    [&::-webkit-slider-thumb]:rounded-full
+                    [&::-webkit-slider-thumb]:bg-blue-500
+                    [&::-webkit-slider-thumb]:cursor-pointer
+                    [&::-moz-range-thumb]:w-4
+                    [&::-moz-range-thumb]:h-4
+                    [&::-moz-range-thumb]:rounded-full
+                    [&::-moz-range-thumb]:bg-blue-500
+                    [&::-moz-range-thumb]:cursor-pointer`}
+                />
+                <span className="w-8 text-center">{animationIntensity}%</span>
+              </div>
+
+              <div className="flex justify-between mt-4">
+                <button
+                  onClick={() => setAnimationsEnabled(!animationsEnabled)}
+                  className={`px-3 py-1 rounded ${
+                    animationsEnabled 
+                      ? 'bg-red-500 hover:bg-red-600' 
+                      : 'bg-green-500 hover:bg-green-600'
+                  } text-white`}
+                >
+                  {animationsEnabled ? 'Disable' : 'Enable'}
+                </button>
+                <button
+                  onClick={() => setAnimationIntensity(50)}
+                  className="px-3 py-1 rounded bg-gray-500 hover:bg-gray-600 text-white"
+                >
+                  Reset
+                </button>
+              </div>
+            </div>
           )}
         </div>
 
+        {/* Rest of the icons */}
         <div onClick={addFiveMinutes} className="mt-4">
           <PlusCircleIcon className="w-8 h-8 text-blue-500 hover:text-blue-400" />
         </div>
