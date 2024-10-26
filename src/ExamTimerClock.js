@@ -7,7 +7,9 @@ import {
   PauseIcon,
   PlusCircleIcon,
   ArrowsPointingOutIcon,
-  ArrowsPointingInIcon
+  ArrowsPointingInIcon,
+  EyeIcon,
+  EyeSlashIcon,
 } from '@heroicons/react/24/solid'; // Import the new icon
 import DotsAnimation from './DotsAnimation';
 import RadialWaveAnimation from './RadialWaveAnimation';
@@ -61,6 +63,7 @@ const ExamTimerClock = ({ durationInMinutes }) => {
   const [theme, setTheme] = useState(() => localStorage.getItem('theme') || 'light');
   const [animationsEnabled, setAnimationsEnabled] = useState(true);
   const [isFullScreen, setIsFullScreen] = useState(false); // Track full-screen state
+  const [isHidden, setIsHidden] = useState(false); // Track visibility of timer and text
 
   const originalDuration = useRef(durationInMinutes * 60);
   const intervalRef = useRef(null);
@@ -87,6 +90,10 @@ const ExamTimerClock = ({ durationInMinutes }) => {
     } else if (document.exitFullscreen) {
       document.exitFullscreen();
     }
+  };
+
+  const toggleVisibility = () => {
+    setIsHidden((prev) => !prev);
   };
 
   // Listen for full-screen change events to update the state
@@ -198,80 +205,93 @@ const ExamTimerClock = ({ durationInMinutes }) => {
             className={`w-8 h-8 cursor-pointer ${
               theme === 'dark' ? 'text-gray-200 hover:text-gray-400' : 'text-gray-800 hover:text-gray-600'
             }`}
-          />
-        )}
+            />
+          )}
+        </div>
 
+        {/* Visibility toggle icon */}
+        <div onClick={toggleVisibility} className="mt-4">
+          {isHidden ? (
+            <EyeSlashIcon className="w-8 h-8 text-red-500 hover:text-red-400 cursor-pointer" />
+          ) : (
+            <EyeIcon className="w-8 h-8 text-green-500 hover:text-green-400 cursor-pointer" />
+          )}
         </div>
       </div>
 
-      {/* Editable Heading */}
-      {isEditingHeading ? (
-        <input
-          type="text"
-          value={heading}
-          onChange={(e) => setHeading(e.target.value)}
-          onBlur={() => setIsEditingHeading(false)}
-          autoFocus
-          className="text-5xl font-bold mb-8 bg-transparent outline-none"
-        />
-      ) : (
-        <h1
-          className="text-5xl font-bold mb-8 cursor-pointer"
-          onDoubleClick={() => setIsEditingHeading(true)}
-        >
-          {heading}
-        </h1>
-      )}
+      {/* Conditionally render the timer and text based on visibility */}
+      {!isHidden && (
+        <>
+          {/* Editable Heading */}
+          {isEditingHeading ? (
+            <input
+              type="text"
+              value={heading}
+              onChange={(e) => setHeading(e.target.value)}
+              onBlur={() => setIsEditingHeading(false)}
+              autoFocus
+              className="text-5xl font-bold mb-8 bg-transparent outline-none"
+            />
+          ) : (
+            <h1
+              className="text-5xl font-bold mb-8 cursor-pointer"
+              onDoubleClick={() => setIsEditingHeading(true)}
+            >
+              {heading}
+            </h1>
+          )}
 
-      {/* Editable Timer */}
-      {isEditingTime ? (
-        <input
-          type="text"
-          value={formatTime(timeRemaining)}
-          onChange={(e) => setTimeRemaining(e.target.value)}
-          onBlur={() => setIsEditingTime(false)}
-          autoFocus
-          className="text-[8rem] sm:text-[10rem] md:text-[12rem] font-mono p-8 rounded-lg shadow-lg bg-transparent outline-none"
-        />
-      ) : (
-        <div
-          className="text-[8rem] sm:text-[10rem] md:text-[12rem] font-mono p-8 rounded-lg shadow-lg cursor-pointer"
-          onDoubleClick={() => setIsEditingTime(true)}
-        >
-          {formatTime(timeRemaining)}
-        </div>
-      )}
+          {/* Editable Timer */}
+          {isEditingTime ? (
+            <input
+              type="text"
+              value={formatTime(timeRemaining)}
+              onChange={(e) => setTimeRemaining(e.target.value)}
+              onBlur={() => setIsEditingTime(false)}
+              autoFocus
+              className="text-[8rem] sm:text-[10rem] md:text-[12rem] font-mono p-8 rounded-lg shadow-lg bg-transparent outline-none"
+            />
+          ) : (
+            <div
+              className="text-[8rem] sm:text-[10rem] md:text-[12rem] font-mono p-8 rounded-lg shadow-lg cursor-pointer"
+              onDoubleClick={() => setIsEditingTime(true)}
+            >
+              {formatTime(timeRemaining)}
+            </div>
+          )}
 
-      {timeRemaining === 0 && (
-        <p className="mt-8 text-4xl font-bold text-red-600">Time's up!</p>
-      )}
+          {timeRemaining === 0 && (
+            <p className="mt-8 text-4xl font-bold text-red-600">Time's up!</p>
+          )}
 
-      <div className="mt-8 flex space-x-4">
-        <button
-          onClick={startTimer}
-          className="px-6 py-3 bg-green-500 text-white rounded-lg shadow hover:bg-green-600"
-        >
-          Start
-        </button>
-        <button
-          onClick={pauseTimer}
-          className="px-6 py-3 bg-yellow-500 text-white rounded-lg shadow hover:bg-yellow-600"
-        >
-          Pause
-        </button>
-        <button
-          onClick={stopTimer}
-          className="px-6 py-3 bg-red-500 text-white rounded-lg shadow hover:bg-red-600"
-        >
-          Stop
-        </button>
-        <button
-          onClick={resetTimer}
-          className="px-6 py-3 bg-blue-500 text-white rounded-lg shadow hover:bg-blue-600"
-        >
-          Reset
-        </button>
-      </div>
+          <div className="mt-8 flex space-x-4">
+            <button
+              onClick={startTimer}
+              className="px-6 py-3 bg-green-500 text-white rounded-lg shadow hover:bg-green-600"
+            >
+              Start
+            </button>
+            <button
+              onClick={pauseTimer}
+              className="px-6 py-3 bg-yellow-500 text-white rounded-lg shadow hover:bg-yellow-600"
+            >
+              Pause
+            </button>
+            <button
+              onClick={stopTimer}
+              className="px-6 py-3 bg-red-500 text-white rounded-lg shadow hover:bg-red-600"
+            >
+              Stop
+            </button>
+            <button
+              onClick={resetTimer}
+              className="px-6 py-3 bg-blue-500 text-white rounded-lg shadow hover:bg-blue-600"
+            >
+              Reset
+            </button>
+          </div>
+        </>
+      )}
 
       <div className="signature absolute bottom-4 right-6 text-4xl text-gray-700 z-20">
         ~ Mudassir Shabbir
