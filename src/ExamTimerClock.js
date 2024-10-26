@@ -1,6 +1,14 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { motion } from 'framer-motion';
-import { SunIcon, MoonIcon, PlayIcon, PauseIcon, PlusCircleIcon, ArrowsPointingOutIcon } from '@heroicons/react/24/solid'; // Import the new icon
+import {
+  SunIcon,
+  MoonIcon,
+  PlayIcon,
+  PauseIcon,
+  PlusCircleIcon,
+  ArrowsPointingOutIcon,
+  ArrowsPointingInIcon
+} from '@heroicons/react/24/solid'; // Import the new icon
 import DotsAnimation from './DotsAnimation';
 import RadialWaveAnimation from './RadialWaveAnimation';
 
@@ -50,12 +58,9 @@ const ExamTimerClock = ({ durationInMinutes }) => {
   const [heading, setHeading] = useState("Exam Timer");
   const [isEditingHeading, setIsEditingHeading] = useState(false);
   const [isEditingTime, setIsEditingTime] = useState(false);
-  
-  const [theme, setTheme] = useState(() => {
-    return localStorage.getItem('theme') || 'light';
-  });
-  
-  const [animationsEnabled, setAnimationsEnabled] = useState(true); // State for controlling animations
+  const [theme, setTheme] = useState(() => localStorage.getItem('theme') || 'light');
+  const [animationsEnabled, setAnimationsEnabled] = useState(true);
+  const [isFullScreen, setIsFullScreen] = useState(false); // Track full-screen state
 
   const originalDuration = useRef(durationInMinutes * 60);
   const intervalRef = useRef(null);
@@ -79,12 +84,23 @@ const ExamTimerClock = ({ durationInMinutes }) => {
   const toggleFullScreen = () => {
     if (!document.fullscreenElement) {
       document.documentElement.requestFullscreen();
-    } else {
-      if (document.exitFullscreen) {
-        document.exitFullscreen();
-      }
+    } else if (document.exitFullscreen) {
+      document.exitFullscreen();
     }
   };
+
+  // Listen for full-screen change events to update the state
+  useEffect(() => {
+    const onFullScreenChange = () => {
+      setIsFullScreen(!!document.fullscreenElement);
+    };
+
+    document.addEventListener("fullscreenchange", onFullScreenChange);
+
+    return () => {
+      document.removeEventListener("fullscreenchange", onFullScreenChange);
+    };
+  }, []);
 
   useEffect(() => {
     document.body.className = theme === 'dark' ? 'bg-gray-900 text-white' : 'bg-gray-100 text-black';
@@ -171,7 +187,20 @@ const ExamTimerClock = ({ durationInMinutes }) => {
 
         {/* Full-screen toggle icon */}
         <div onClick={toggleFullScreen} className="mt-4">
-          <ArrowsPointingOutIcon className="w-8 h-8 text-gray-800 hover:text-gray-600 cursor-pointer" />
+        {isFullScreen ? (
+          <ArrowsPointingInIcon
+            className={`w-8 h-8 cursor-pointer ${
+              theme === 'dark' ? 'text-gray-200 hover:text-gray-400' : 'text-gray-800 hover:text-gray-600'
+            }`}
+          />
+        ) : (
+          <ArrowsPointingOutIcon
+            className={`w-8 h-8 cursor-pointer ${
+              theme === 'dark' ? 'text-gray-200 hover:text-gray-400' : 'text-gray-800 hover:text-gray-600'
+            }`}
+          />
+        )}
+
         </div>
       </div>
 
