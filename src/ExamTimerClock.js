@@ -11,7 +11,7 @@ import {
   EyeSlashIcon,
   SpeakerWaveIcon,
 } from '@heroicons/react/24/solid';
-import DotsAnimation from './DotsAnimation';
+// import DotsAnimation from './DotsAnimation';
 import RadialWaveAnimation from './RadialWaveAnimation';
 
 const ExamTimerClock = ({ durationInMinutes = 60 }) => {
@@ -60,9 +60,9 @@ const ExamTimerClock = ({ durationInMinutes = 60 }) => {
     localStorage.setItem('theme', newTheme);
   };
 
-  const toggleAnimations = () => {
-    setAnimationsEnabled((prev) => !prev);
-  };
+  // const toggleAnimations = () => {
+  //   setAnimationsEnabled((prev) => !prev);
+  // };
 
   const addFiveMinutes = () => {
     if (window.confirm("Do you want to add 5 minutes to the timer?")) {
@@ -108,32 +108,32 @@ const ExamTimerClock = ({ durationInMinutes = 60 }) => {
     }
   }, []);
   // Modify your existing timer start/pause logic
-const toggleTimer = () => {
-  if (!isRunning) {
-    // Starting timer
-    const now = Date.now();
-    setStartTime(now);
-    setIsRunning(true);
-    setIsPaused(false);
+// const toggleTimer = () => {
+//   if (!isRunning) {
+//     // Starting timer
+//     const now = Date.now();
+//     setStartTime(now);
+//     setIsRunning(true);
+//     setIsPaused(false);
     
-    localStorage.setItem('timerState', JSON.stringify({
-      startTime: now,
-      remainingTime: timeRemaining,
-      wasRunning: true
-    }));
-  } else {
-    // Pausing timer
-    setIsRunning(false);
-    setIsPaused(true);
-    setStartTime(null); // Reset startTime on pause
+//     localStorage.setItem('timerState', JSON.stringify({
+//       startTime: now,
+//       remainingTime: timeRemaining,
+//       wasRunning: true
+//     }));
+//   } else {
+//     // Pausing timer
+//     setIsRunning(false);
+//     setIsPaused(true);
+//     setStartTime(null); // Reset startTime on pause
     
-    localStorage.setItem('timerState', JSON.stringify({
-      startTime: null,
-      remainingTime: timeRemaining,
-      wasRunning: false
-    }));
-  }
-};
+//     localStorage.setItem('timerState', JSON.stringify({
+//       startTime: null,
+//       remainingTime: timeRemaining,
+//       wasRunning: false
+//     }));
+//   }
+// };
 
 // Add cleanup when timer ends
 useEffect(() => {
