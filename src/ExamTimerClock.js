@@ -26,7 +26,7 @@ const ExamTimerClock = ({ durationInMinutes = 60 }) => {
   const [isFullScreen, setIsFullScreen] = useState(false);
   const [isHidden, setIsHidden] = useState(false);
   const [animationIntensity, setAnimationIntensity] = useState(10); // 0-100 scale
-  
+  const [startTime, setStartTime] = useState(null);
 
   const originalDuration = useRef(durationInMinutes * 60);
   const intervalRef = useRef(null);
@@ -86,6 +86,115 @@ const ExamTimerClock = ({ durationInMinutes = 60 }) => {
   };
 
   useEffect(() => {
+    // Load saved state on mount
+    const savedState = JSON.parse(localStorage.getItem('timerState') || 'null');
+    
+    if (savedState) {
+      const { startTime, remainingTime, wasRunning } = savedState;
+      
+      if (wasRunning && startTime) {
+        // Calculate elapsed time since last save
+        const elapsedSinceClose = Math.floor((Date.now() - startTime) / 1000);
+        const newRemainingTime = Math.max(originalDuration.current - elapsedSinceClose, 0);
+        
+        setTimeRemaining(newRemainingTime);
+        setIsRunning(true);
+        setStartTime(startTime);
+      } else {
+        // Timer was paused
+        setTimeRemaining(remainingTime);
+        setIsRunning(wasRunning);
+      }
+    }
+  }, []);
+  // Modify your existing timer start/pause logic
+const toggleTimer = () => {
+  if (!isRunning) {
+    // Starting timer
+    const now = Date.now();
+    setStartTime(now);
+    setIsRunning(true);
+    setIsPaused(false);
+    
+    localStorage.setItem('timerState', JSON.stringify({
+      startTime: now,
+      remainingTime: timeRemaining,
+      wasRunning: true
+    }));
+  } else {
+    // Pausing timer
+    setIsRunning(false);
+    setIsPaused(true);
+    setStartTime(null); // Reset startTime on pause
+    
+    localStorage.setItem('timerState', JSON.stringify({
+      startTime: null,
+      remainingTime: timeRemaining,
+      wasRunning: false
+    }));
+  }
+};
+
+// Add cleanup when timer ends
+useEffect(() => {
+  if (timeRemaining === 0) {
+    localStorage.removeItem('timerState');
+  }
+}, [timeRemaining]);
+
+// Add cleanup on component unmount
+useEffect(() => {
+  return () => {
+    if (isRunning) {
+      localStorage.setItem('timerState', JSON.stringify({
+        startTime: startTime,
+        remainingTime: timeRemaining,
+        wasRunning: isRunning
+      }));
+    }
+  };
+}, [isRunning, startTime, timeRemaining]);
+
+// Update the timer tick effect
+useEffect(() => {
+  if (isRunning) {
+    // Set initial startTime if not set
+    if (!startTime) {
+      setStartTime(Date.now());
+    }
+
+    intervalRef.current = setInterval(() => {
+      setTimeRemaining(prev => {
+        const now = Date.now();
+        const elapsed = Math.floor((now - startTime) / 1000);
+        const newTime = Math.max(originalDuration.current - elapsed, 0);
+
+        // Save state on each tick
+        localStorage.setItem('timerState', JSON.stringify({
+          startTime: startTime,
+          remainingTime: newTime,
+          wasRunning: true
+        }));
+
+        if (newTime === 0) {
+          clearInterval(intervalRef.current);
+          localStorage.removeItem('timerState');
+        }
+        return newTime;
+      });
+    }, 1000);
+  } else {
+    clearInterval(intervalRef.current);
+  }
+
+  return () => {
+    if (intervalRef.current) {
+      clearInterval(intervalRef.current);
+    }
+  };
+}, [isRunning, startTime]);
+
+  useEffect(() => {
     const handleClickOutside = (event) => {
       if (
         animationControlsRef.current &&
@@ -113,28 +222,21 @@ const ExamTimerClock = ({ durationInMinutes = 60 }) => {
 
   const startTimer = () => {
     if (!isRunning) {
+      const now = Date.now();
       setIsRunning(true);
       setIsPaused(false);
       
-      const endTime = isPaused 
-        ? Date.now() + (timeRemaining * 1000)
-        : Date.now() + (timeRemaining * 1000);
+      // If resuming from pause, use remaining time
+      // If starting fresh, use original duration
+      const timeToUse = isPaused ? timeRemaining : originalDuration.current;
       
-      pausedTimeRef.current = endTime;
-
-      intervalRef.current = setInterval(() => {
-        const now = Date.now();
-        const remaining = Math.max(0, Math.floor((pausedTimeRef.current - now) / 1000));
-        
-        setTimeRemaining(remaining);
-
-        if (remaining <= 0) {
-          clearInterval(intervalRef.current);
-          setIsRunning(false);
-          setIsPaused(false);
-          setTimeRemaining(0);
-        }
-      }, 1000);
+      setStartTime(now - ((originalDuration.current - timeToUse) * 1000));
+      
+      localStorage.setItem('timerState', JSON.stringify({
+        startTime: now,
+        remainingTime: timeToUse,
+        wasRunning: true
+      }));
     }
   };
 
@@ -143,8 +245,13 @@ const ExamTimerClock = ({ durationInMinutes = 60 }) => {
       clearInterval(intervalRef.current);
       setIsRunning(false);
       setIsPaused(true);
-      const remaining = Math.max(0, Math.floor((pausedTimeRef.current - Date.now()) / 1000));
-      setTimeRemaining(remaining);
+      
+      // Store current remaining time
+      localStorage.setItem('timerState', JSON.stringify({
+        startTime: null,
+        remainingTime: timeRemaining,
+        wasRunning: false
+      }));
     }
   };
 
@@ -161,7 +268,9 @@ const ExamTimerClock = ({ durationInMinutes = 60 }) => {
     setIsRunning(false);
     setIsPaused(false);
     setTimeRemaining(originalDuration.current);
+    setStartTime(null);
     pausedTimeRef.current = null;
+    localStorage.removeItem('timerState');
   };
 
   const formatTime = (seconds) => {
