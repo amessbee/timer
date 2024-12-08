@@ -13,6 +13,7 @@ import {
 } from '@heroicons/react/24/solid';
 // import DotsAnimation from './DotsAnimation';
 import RadialWaveAnimation from './RadialWaveAnimation';
+import VisitorCounter from './VisitorCounter';
 
 const ExamTimerClock = ({ durationInMinutes = 60 }) => {
   const [timeRemaining, setTimeRemaining] = useState(durationInMinutes * 60);
@@ -526,6 +527,7 @@ useEffect(() => {
       <a href="https://github.com/amessbee/timer" target="_blank" rel="noopener noreferrer" className="signature absolute bottom-4 right-6 text-xs text-gray-500 z-20">
         ~ Mudassir Shabbir
       </a>
+      <VisitorCounter />
     </div>
   );
 };
