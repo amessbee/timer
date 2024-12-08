@@ -280,6 +280,28 @@ useEffect(() => {
     return `${hours.toString().padStart(2, '0')}:${minutes.toString().padStart(2, '0')}:${remainingSeconds.toString().padStart(2, '0')}`;
   };
 
+  // Add this helper function
+  const parseTimeInput = (input) => {
+    // Remove any non-digit characters
+    const cleanInput = input.replace(/[^\d]/g, '');
+    
+    if (cleanInput.length === 0) return 0;
+    
+    // Convert HH:MM:SS format to seconds
+    let seconds = 0;
+    if (cleanInput.length <= 2) {
+      seconds = parseInt(cleanInput);
+    } else if (cleanInput.length <= 4) {
+      seconds = parseInt(cleanInput.slice(-2)) + parseInt(cleanInput.slice(0, -2)) * 60;
+    } else {
+      seconds = parseInt(cleanInput.slice(-2)) + 
+                parseInt(cleanInput.slice(-4, -2)) * 60 + 
+                parseInt(cleanInput.slice(0, -4)) * 3600;
+    }
+    
+    return seconds;
+  };
+
   return (
     <div className={`flex flex-col items-center justify-center h-screen transition-colors duration-1000 ${theme === 'dark' ? 'bg-gray-900 text-white' : 'bg-gray-100 text-black'}`}>
       {animationsEnabled && (
@@ -430,15 +452,23 @@ useEffect(() => {
             ))}
           </div>
 
+          {/* Update the time edit input component */}
           {isEditingTime ? (
             <input
               type="text"
               value={formatTime(timeRemaining)}
               onChange={(e) => {
-                // Add time input validation here if needed
-                setTimeRemaining(e.target.value);
+                const newSeconds = parseTimeInput(e.target.value);
+                if (!isNaN(newSeconds)) {
+                  setTimeRemaining(newSeconds);
+                }
               }}
               onBlur={() => setIsEditingTime(false)}
+              onKeyDown={(e) => {
+                if (e.key === 'Enter') {
+                  setIsEditingTime(false);
+                }
+              }}
               autoFocus
               className="text-[8rem] sm:text-[10rem] md:text-[12rem] font-mono p-8 rounded-lg shadow-lg bg-transparent outline-none text-center"
             />
@@ -477,7 +507,7 @@ useEffect(() => {
             <button
               onClick={stopTimer}
               disabled={!isRunning && !isPaused}
-              className={`px-6 py-3 text-white rounded-lg shadow ${
+              className={`px-6 py-3 tex t-white rounded-lg shadow ${
                 (!isRunning && !isPaused) ? 'bg-gray-500 cursor-not-allowed' : 'bg-red-500 hover:bg-red-600'
               }`}
             >
@@ -493,7 +523,7 @@ useEffect(() => {
         </>
       )}
 
-      <a href="https://github.com/amessbee/timer" target="_blank" rel="noopener noreferrer" className="signature absolute bottom-4 right-6 text-4xl text-gray-700 z-20">
+      <a href="https://github.com/amessbee/timer" target="_blank" rel="noopener noreferrer" className="signature absolute bottom-4 right-6 text-xs text-gray-500 z-20">
         ~ Mudassir Shabbir
       </a>
     </div>
