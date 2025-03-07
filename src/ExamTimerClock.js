@@ -525,7 +525,7 @@ useEffect(() => {
       )}
 
       <a href="https://github.com/amessbee/timer" target="_blank" rel="noopener noreferrer" className="signature absolute bottom-4 right-6 text-xs text-gray-500 z-20">
-        _mudassir
+        amessbee/timer
       </a>
       <VisitorCounter />
     </div>
