@@ -47,7 +47,7 @@ The timer state is automatically saved, so if you accidentally close the browser
 
 ### Prerequisites
 
-Make sure you have [Node.js](https://nodejs.org/) and npm installed on your machine.
+Make sure you have [Node.js](https://nodejs.org/) and npm installed on your machine for local development and deployment.
 
 ### Installation
 
@@ -90,16 +90,42 @@ If you aren't satisfied with the build tool and configuration choices, you can e
 - HTML (11%)
 - CSS (7.1%)
 
-### Contributing
+## Contributing
 
 Contributions are what make the open source community such an amazing place to learn, inspire, and create. Any contributions you make are greatly appreciated.
 
-- Fork the Project
-- Create your Feature Branch (`git checkout -b feature/AmazingFeature`)
-- Commit your Changes (`git commit -m 'Add some AmazingFeature'`)
-- Push to the Branch (`git push origin feature/AmazingFeature`)
-- Open a Pull Request
+### How to Contribute
 
-### License
+There are several ways you can contribute to the project:
+
+1. **Report Issues**: If you encounter a bug or have a feature request, please submit an issue at [https://github.com/amessbee/timer/issues](https://github.com/amessbee/timer/issues).
+
+2. **Suggest Improvements**: Have ideas for making the timer better? Feel free to start a discussion in the issues section.
+
+3. **Submit Code Changes**:
+   - Fork the repository
+   - Create your feature branch (`git checkout -b feature/your-amazing-feature`)
+   - Commit your changes (`git commit -m 'Add some amazing feature'`)
+   - Push to the branch (`git push origin feature/your-amazing-feature`)
+   - Open a Pull Request
+
+4. **Documentation**: Help improve documentation, examples, or this README.
+
+### Development Guidelines
+
+- Please maintain consistent coding style
+- Add appropriate comments for any new functionality
+- Ensure your changes don't break existing functionality
+
+### Feature Requests
+
+When requesting new features, please provide:
+- Clear description of the feature
+- Use cases for the feature
+- Any visual mockups (if applicable)
+
+The project follows an open governance model, and all contributions are appreciated. Together we can make this timer app even better!
+
+## License
 
 Distributed under the MIT License.
