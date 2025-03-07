@@ -42,7 +42,7 @@ The Exam Timer app offers several interactive features to customize your experie
 
 ### Persistence
 
-The timer state is automatically saved, so if you accidentally close the browser or refresh the page, your timer will continue from where you left off.
+The timer state is automatically saved, so if you accidentally close the browser or refresh the page, your timer will continue to run in the background.
 
 ### Prerequisites
 

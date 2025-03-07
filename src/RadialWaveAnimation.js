@@ -1,6 +1,6 @@
 import React, { useEffect, useRef } from 'react';
 
-const ComplexWaveAnimation = ({ animationIntensity }) => {
+const RadialWaveAnimation = ({ animationIntensity }) => {
   const canvasRef = useRef(null);
 
   useEffect(() => {
@@ -9,20 +9,23 @@ const ComplexWaveAnimation = ({ animationIntensity }) => {
     const waves = [];
     const intensity = 0.01*animationIntensity*0.01*animationIntensity || 0.05;
 
-    // Set canvas size
-    canvas.width = window.innerWidth;
-    canvas.height = window.innerHeight;
+    // Improve canvas resolution for retina displays
+    const dpr = window.devicePixelRatio || 1;
+    canvas.width = window.innerWidth * dpr;
+    canvas.height = window.innerHeight * dpr;
+    canvas.style.width = `${window.innerWidth}px`;
+    canvas.style.height = `${window.innerHeight}px`;
+    ctx.scale(dpr, dpr);
 
     // Function to get a random position on the screen
     const getRandomCenter = () => ({
-      x: Math.random() * canvas.width,
-      y: Math.random() * canvas.height,
+      x: Math.random() * window.innerWidth,
+      y: Math.random() * window.innerHeight,
     });
     // Generate 10 random centers
-    const randomCenters = Array.from({ length: 10 }, () => getRandomCenter(canvas));
+    const randomCenters = Array.from({ length: 10 }, () => getRandomCenter());
 
-
-    // Generate 10 unique sine wave functions
+    // Generate unique functions (same as before)
     const geometricFunctions = [
       (wave) => { wave.x += wave.speed; wave.y += Math.sin(wave.x * 0.005) * 5; },   // Sine wave
       (wave) => { wave.x -= wave.speed; wave.y += Math.sin(wave.x * 0.005) * 5; },   // Reverse Sine wave
@@ -75,76 +78,156 @@ const ComplexWaveAnimation = ({ animationIntensity }) => {
     // Geometric Wave class for various complex functions
     class GeometricWave {
       constructor() {
-        this.x = Math.random() * canvas.width;  // Starting X position
-        this.y = Math.random() * canvas.height;  // Starting Y position
-        this.angle = 0;  // Initial angle for circular and parametric motions
-        this.radius = Math.random() * 50 + 1;  // Initial radius
-        this.growthRate = Math.random() * 0.02 + 0.01;  // Growth rate for circular paths
-        this.speed = Math.random() * 2 + 1;  // Speed of movement
-        this.opacity = 1;  // Initial opacity
-        this.fadeRate = 0.005;  // Fade out rate
-        this.sizeFactor = Math.random();  // Random size factor
-        this.animationFunc = geometricFunctions[Math.floor(Math.random() * geometricFunctions.length)];  // Randomly select a geometric function
+        this.x = Math.random() * window.innerWidth;
+        this.y = Math.random() * window.innerHeight;
+        this.angle = 0;
+        this.radius = Math.random() * 50 + 1;
+        this.growthRate = Math.random() * 0.02 + 0.01;
+        this.speed = Math.random() * 2 + 1;
+        this.opacity = 1;
+        this.fadeRate = 0.005;
+        this.sizeFactor = Math.random();
+        this.animationFunc = geometricFunctions[Math.floor(Math.random() * geometricFunctions.length)];
+        
+        // Improved 3D bubble properties
+        this.color = {
+          r: Math.floor(Math.random() * 40) + 200, // Brighter colors
+          g: Math.floor(Math.random() * 40) + 200,
+          b: Math.floor(Math.random() * 80) + 190
+        };
+        this.highlightAngle = Math.random() * Math.PI * 2;
+        this.highlightSize = 0.3 + Math.random() * 0.2;
+        this.shadowOpacity = 0.2 + Math.random() * 0.3;
       }
 
-      // Update position and properties based on the chosen geometric function
       update() {
-        this.animationFunc(this);  // Call the randomly assigned geometric function
-        this.opacity -= this.fadeRate;  // Fade out gradually
+        this.animationFunc(this);
+        this.opacity -= this.fadeRate;
       }
 
-      // Draw the geometric wave
-      draw( factor=1 ) {
-        if (this.opacity > 0) {
-          ctx.strokeStyle = `rgba(255, 255, 255, ${this.opacity})`;
-          ctx.lineWidth = this.radius*this.radius * 0.01;
-          ctx.beginPath();
-          ctx.arc(this.x, this.y, factor*50, 0, Math.PI * 2);
-          ctx.stroke();
-        }
+      draw(factor = 1) {
+        if (this.opacity <= 0) return;
+        
+        // Sharper bubble sizes
+        const bubbleSize = Math.round(factor * 50);
+        // const x = Math.round(this.x);
+        // const y = Math.round(this.y);
+        const x = this.x;
+        const y = this.y;
+        
+        // Improved gradient positioning
+        const gradient = ctx.createRadialGradient(
+          x - bubbleSize * 0.3,
+          y - bubbleSize * 0.3,
+          0, // Start from center point
+          x, 
+          y, 
+          bubbleSize
+        );
+        
+        const { r, g, b } = this.color;
+        
+        // Sharper contrast in gradient steps
+        gradient.addColorStop(0,   `rgba(255, 255, 255, ${this.opacity * 1.0})`);
+        gradient.addColorStop(0.3, `rgba(${r}, ${g}, ${b}, ${this.opacity * 0.9})`);
+        gradient.addColorStop(0.7, `rgba(${r-20}, ${g-20}, ${b}, ${this.opacity * 0.8})`);
+        gradient.addColorStop(0.9, `rgba(${r-40}, ${g-40}, ${b-20}, ${this.opacity * 0.7})`);
+        gradient.addColorStop(1, `rgba(${r-60}, ${g-60}, ${b-30}, ${this.opacity * 0.4})`);
+        
+        // Draw with anti-aliasing disabled for sharper edges
+        ctx.save();
+        ctx.imageSmoothingEnabled = true;
+        ctx.imageSmoothingQuality = 'high';
+        
+        // Main bubble
+        ctx.beginPath();
+        ctx.arc(x, y, bubbleSize, 0, Math.PI * 2);
+        ctx.fillStyle = gradient;
+        ctx.fill();
+        
+        // Add thin outline for definition
+        ctx.lineWidth = 0.5;
+        ctx.strokeStyle = `rgba(255, 255, 255, ${this.opacity * 0.5})`;
+        ctx.stroke();
+        
+        // Sharper highlight reflection
+        const highlightX = x - bubbleSize * 0.35;
+        const highlightY = y - bubbleSize * 0.35;
+        const highlightRadius = bubbleSize * this.highlightSize;
+        
+        const highlightGradient = ctx.createRadialGradient(
+          highlightX, highlightY, 0,
+          highlightX, highlightY, highlightRadius
+        );
+        
+        highlightGradient.addColorStop(0, `rgba(255, 255, 255, ${this.opacity * 0.95})`);
+        highlightGradient.addColorStop(0.5, `rgba(255, 255, 255, ${this.opacity * 0.5})`);
+        highlightGradient.addColorStop(1, `rgba(255, 255, 255, 0)`);
+        
+        ctx.beginPath();
+        ctx.arc(highlightX, highlightY, highlightRadius, 0, Math.PI * 2);
+        ctx.fillStyle = highlightGradient;
+        ctx.fill();
+        
+        // Add a second smaller highlight for more realism
+        const smallHighlightX = x + bubbleSize * 0.2;
+        const smallHighlightY = y + bubbleSize * 0.2;
+        const smallHighlightRadius = bubbleSize * 0.1;
+        
+        ctx.beginPath();
+        ctx.arc(smallHighlightX, smallHighlightY, smallHighlightRadius, 0, Math.PI * 2);
+        ctx.fillStyle = `rgba(255, 255, 255, ${this.opacity * 0.7})`;
+        ctx.fill();
+        
+        ctx.restore();
       }
     }
 
-    // Create geometric waves
+    // Create and animate waves (same as before)
     function createWaves() {
       waves.push(new GeometricWave());
     }
 
-    // Animate the waves
     function animateWaves() {
-      ctx.clearRect(0, 0, canvas.width, canvas.height);  // Clear the canvas
+      ctx.clearRect(0, 0, canvas.width / dpr, canvas.height / dpr);
+      
+      waves.sort((a, b) => (b.radius * b.sizeFactor) - (a.radius * a.sizeFactor));
+      
       waves.forEach((wave, index) => {
         wave.update();
-        wave.draw( wave.sizeFactor );  // Draw the wave with a random size factor
+        wave.draw(wave.sizeFactor);
 
-        // Remove the wave if it has faded out
         if (wave.opacity <= 0) {
           waves.splice(index, 1);
         }
       });
 
-      // Generate new waves occasionally
       if (Math.random() < intensity) {
         createWaves();
       }
 
-      requestAnimationFrame(animateWaves);  // Repeat the animation
+      requestAnimationFrame(animateWaves);
     }
 
     animateWaves();
 
-    // Handle window resize
-    window.addEventListener('resize', () => {
-      canvas.width = window.innerWidth;
-      canvas.height = window.innerHeight;
-    });
+    const handleResize = () => {
+      const dpr = window.devicePixelRatio || 1;
+      canvas.width = window.innerWidth * dpr;
+      canvas.height = window.innerHeight * dpr;
+      canvas.style.width = `${window.innerWidth}px`;
+      canvas.style.height = `${window.innerHeight}px`;
+      ctx.scale(dpr, dpr);
+    };
+    
+    window.addEventListener('resize', handleResize);
 
     return () => {
-      window.removeEventListener('resize', null);
+      window.removeEventListener('resize', handleResize);
     };
-  }, [animationIntensity]); // Add animationIntensity as a dependency
+  }, [animationIntensity]);
 
   return <canvas ref={canvasRef} className="absolute top-0 left-0 pointer-events-none z-0"></canvas>;
 };
 
-export default ComplexWaveAnimation;
+export default RadialWaveAnimation;
