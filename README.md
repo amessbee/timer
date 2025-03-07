@@ -13,7 +13,8 @@ This project is an exam timer application built with JavaScript, HTML, and CSS. 
 
 ## Getting Started
 
-For a demonstration view the output at: https://amessbee.github.io/timer/ - to get a local copy up and running follow these simple steps.
+- For a demonstration view the output at: [https://amessbee.github.io/timer/](https://amessbee.github.io/timer/) 
+-to get a local copy up and running follow these simple steps.
 
 ## Usage
 
