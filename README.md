@@ -29,7 +29,7 @@ The Exam Timer app offers several interactive features to customize your experie
 
 ### Customization
 
-- **Edit Title**: Double-click on the "Exam Timer" text to change it to any title you prefer.
+- **Edit Title**: Double-click on the "ITU Exam Timer" text to change it to any title you prefer.
 - **Theme Toggle**: Click the sun/moon icon in the top-right corner to switch between light and dark themes.
 - **Animation Controls**: Click the play/pause icon to access animation settings:
   - Adjust the animation intensity using the slider

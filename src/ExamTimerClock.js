@@ -19,7 +19,7 @@ const ExamTimerClock = ({ durationInMinutes = 60 }) => {
   const [timeRemaining, setTimeRemaining] = useState(durationInMinutes * 60);
   const [isRunning, setIsRunning] = useState(false);
   const [isPaused, setIsPaused] = useState(false);
-  const [heading, setHeading] = useState("Exam Timer");
+  const [heading, setHeading] = useState("ITU Exam Timer");
   const [isEditingHeading, setIsEditingHeading] = useState(false);
   const [isEditingTime, setIsEditingTime] = useState(false);
   const [theme, setTheme] = useState(() => localStorage.getItem('theme') || 'light');
