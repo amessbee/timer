@@ -1,0 +1,72 @@
+name: React App CI
+
+# When to run this workflow
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+    branches:
+      - main
+
+# Define the jobs
+jobs:
+  build-and-test:
+    runs-on: ubuntu-latest  # Run on the latest version of Ubuntu
+
+    steps:
+      # Step 1: Check out the repository code
+      - name: Checkout repository
+        uses: actions/checkout@v3
+
+      # Step 2: Set up Node.js
+      - name: Set up Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: '18'  # Specify Node.js version
+
+      # Step 3: Install dependencies (using npm or yarn)
+      - name: Install dependencies
+        run: npm install
+
+      # Step 4: Run tests (if you have any)
+      - name: Run tests
+        run: npm test
+
+      # Step 5: Build the project
+      - name: Build the project
+        run: npm run build
+
+      # Optional: Step 6: Cache dependencies for faster builds
+      - name: Cache Node modules
+        uses: actions/cache@v3
+        with:
+          path: node_modules
+          key: ${{ runner.os }}-node-${{ hashFiles('package-lock.json') }}
+          restore-keys: |
+            ${{ runner.os }}-node-
+
+  # Optional: Deploy to GitHub Pages (if desired)
+  deploy:
+    if: github.ref == 'refs/heads/main'
+    runs-on: ubuntu-latest
+    needs: build-and-test  # Only run if the build-and-test job passes
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v3
+
+      # Install dependencies again (required for deployment)
+      - name: Install dependencies
+        run: npm install
+
+      # Build the project
+      - name: Build project
+        run: npm run build
+
+      # Deploy to GitHub Pages
+      - name: Deploy to GitHub Pages
+        uses: peaceiris/actions-gh-pages@v3
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          publish_dir: ./build  # This is the default React build output folder
