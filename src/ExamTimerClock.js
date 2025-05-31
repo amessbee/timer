@@ -28,6 +28,7 @@ const ExamTimerClock = ({ durationInMinutes = 60 }) => {
   const [isHidden, setIsHidden] = useState(false);
   const [animationIntensity, setAnimationIntensity] = useState(10); // 0-100 scale
   const [startTime, setStartTime] = useState(null);
+  const [showSeconds, setShowSeconds] = useState(true); // New state for seconds display
 
   const originalDuration = useRef(durationInMinutes * 60);
   const intervalRef = useRef(null);
@@ -278,7 +279,15 @@ useEffect(() => {
     const hours = Math.floor(seconds / 3600);
     const minutes = Math.floor((seconds % 3600) / 60);
     const remainingSeconds = seconds % 60;
-    return `${hours.toString().padStart(2, '0')}:${minutes.toString().padStart(2, '0')}:${remainingSeconds.toString().padStart(2, '0')}`;
+    if (showSeconds) {
+      return `${hours.toString().padStart(2, '0')}:${minutes
+        .toString()
+        .padStart(2, '0')}:${remainingSeconds.toString().padStart(2, '0')}`;
+    } else {
+      return `${hours.toString().padStart(2, '0')}:${minutes
+        .toString()
+        .padStart(2, '0')}`;
+    }
   };
 
   // Add this helper function
@@ -303,6 +312,21 @@ useEffect(() => {
     return seconds;
   };
 
+  // Custom icons for seconds toggle
+  const SecondsIcon = ({ className }) => (
+    <svg viewBox="0 0 34 34" fill="none" className={className} xmlns="http://www.w3.org/2000/svg">
+      <rect x="2" y="2" width="32" height="32" rx="6" fill="#fff" stroke="#2563eb" strokeWidth="2" />
+      <text x="4" y="22" fontFamily="monospace" fontSize="14" fill="#2563eb">:59</text>
+    </svg>
+  );
+  const SecondsOffIcon = ({ className }) => (
+    <svg viewBox="0 0 34 34" fill="none" className={className} xmlns="http://www.w3.org/2000/svg">
+      <rect x="2" y="2" width="32" height="32" rx="6" fill="#f3f4f6" stroke="#6b7280" strokeWidth="2" />
+      <text x="4" y="22" fontFamily="monospace" fontSize="14" fill="#6b7280">:59</text>
+      <line x1="6" y1="26" x2="26" y2="6" stroke="#ef4444" strokeWidth="2.5" strokeLinecap="round" />
+    </svg>
+  );
+
   return (
     <div className={`flex flex-col items-center justify-center h-screen transition-colors duration-1000 ${theme === 'dark' ? 'bg-gray-900 text-white' : 'bg-gray-100 text-black'}`}>
       {animationsEnabled && (
@@ -318,6 +342,21 @@ useEffect(() => {
           ) : (
             <SunIcon className="w-8 h-8 text-yellow-400 hover:text-yellow-200" />
           )}
+        </div>
+
+        {/* Toggle seconds display */}
+        <div className="mt-4">
+          <div
+            onClick={() => setShowSeconds((prev) => !prev)}
+            className={`w-8 h-8 hover:text-gray-600 transition`}
+            title={showSeconds ? 'Hide Seconds' : 'Show Seconds'}
+          >
+            {showSeconds ? (
+              <SecondsIcon className="w-6 h-6" />
+            ) : (
+              <SecondsOffIcon className="w-6 h-6" />
+            )}
+          </div>
         </div>
 
         {/* Animation controls with popup */}
